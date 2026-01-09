@@ -35,7 +35,7 @@ export class WhatsNewManager {
 
     public registerContentProvider(publisher: string, extensionName: string, contentProvider: ContentProvider): WhatsNewManager {
         this.publisher = publisher;
-        this.extensionName = extensionName
+        this.extensionName = extensionName;
         this.contentProvider = contentProvider;
         this.versionKey = `${this.extensionName}.version`;
 

@@ -96,17 +96,17 @@ export class WhatsNewPageBuilder {
                 let message: string;
 
                 if (typeof cl.detail === "string") {
-                    message = cl.detail
+                    message = cl.detail;
                 } else {
                     const cc: ChangeLogIssue = <ChangeLogIssue>cl.detail;
                     if (cc.kind === IssueKind.Issue) {
                         message = `${cc.message}
                             (<a title="Open Issue #${cc.id}" 
-                            href="${this.repositoryUrl}/issues/${cc.id}">Issue #${cc.id}</a>)`
+                            href="${this.repositoryUrl}/issues/${cc.id}">Issue #${cc.id}</a>)`;
                     } else {
                         message = `${cc.message}
                             (Thanks to ${cc.kudos} - <a title="Open PR #${cc.id}" 
-                            href="${this.repositoryUrl}/pull/${cc.id}">PR #${cc.id}</a>)`
+                            href="${this.repositoryUrl}/pull/${cc.id}">PR #${cc.id}</a>)`;
                     }
                 }
                 
@@ -167,7 +167,7 @@ export class WhatsNewPageBuilder {
                 `<a class="button button--flat-primary" title="${sc.title}" href="${sc.link}" target="_blank">
                     ${sc.message} 
                 </a>`
-            )           
+            );           
         }
         supportChannelsString = supportChannelsString.concat("</div>");
         this.htmlFile = this.htmlFile.replace("${supportChannels}", supportChannelsString);
