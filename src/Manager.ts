@@ -20,6 +20,7 @@ export class WhatsNewManager {
 
     private extension!: vscode.Extension<any>;
     private versionKey!: string;
+    private shownKey!: string;
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
@@ -38,8 +39,9 @@ export class WhatsNewManager {
         this.extensionName = extensionName;
         this.contentProvider = contentProvider;
         this.versionKey = `${this.extensionName}.version`;
+        this.shownKey = `${this.extensionName}.whatsNew.shown`;
 
-        this.context.globalState.setKeysForSync([this.versionKey]);
+        this.context.globalState.setKeysForSync([this.versionKey, this.shownKey]);
 
         return this;
     }
@@ -101,7 +103,7 @@ export class WhatsNewManager {
             return;
         }
 
-        await this.showPage();
+        await this.showPageInFocusedWindowOnly(currentVersion);
     }
 
     public async showPageIfCurrentVersionIsGreaterThanPrevisouVersion(currentVersion: string, previousVersion: string | undefined) {
@@ -123,7 +125,34 @@ export class WhatsNewManager {
             return;
         }
 
+        await this.showPageInFocusedWindowOnly(currentVersion);
+    }
+
+    private async showPageInFocusedWindowOnly(currentVersion: string): Promise<void> {
+        // Another window already showed the Webview for this version
+        if (this.context.globalState.get<string>(this.shownKey) === currentVersion) {
+            return;
+        }
+
+        if (vscode.window.state.focused) {
+            await this.showPageAndMarkShown(currentVersion);
+        } else {
+            // Defer until this window gains focus; guard against another window showing first
+            const disposable = vscode.window.onDidChangeWindowState(state => {
+                if (state.focused) {
+                    disposable.dispose();
+                    if (this.context.globalState.get<string>(this.shownKey) !== currentVersion) {
+                        this.showPageAndMarkShown(currentVersion).catch(() => { /* ignore */ });
+                    }
+                }
+            });
+            this.context.subscriptions.push(disposable);
+        }
+    }
+
+    private async showPageAndMarkShown(currentVersion: string): Promise<void> {
         await this.showPage();
+        await this.context.globalState.update(this.shownKey, currentVersion);
     }
 
     private async getWebviewContentLocal(webview: Webview, htmlFile: Uri, cssUrl: Uri, logoUrl: Uri): Promise<string> {
