@@ -113,6 +113,7 @@ export class BookmarksSponsorProvider implements SponsorProvider {
 const provider = new BookmarksContentProvider();
 const viewer = new WhatsNewManager(context)
     .registerContentProvider("alefragnani", "bookmarks", provider)
+    .setUpdateKind("major") // optional, defaults to "minor"
     .registerSocialMediaProvider(new BookmarksSocialMediaProvider())
     .registerSponsorProvider(new BookmarksSponsorProvider());
 
@@ -126,7 +127,9 @@ context.subscriptions.push(vscode.commands.registerCommand("bookmarks.whatsNew",
 
 ### Detects version updates
 
-It follows [SEMVER - Semantic Versioning](https://www.semver.org) to detect **Major**, **Minor** and **Patch** versions. The **What's New** page will only be displayed when a **Major** or **Minor** update occurs. **Patches** are updated silently.
+It follows [SEMVER - Semantic Versioning](https://www.semver.org) to detect **Major**, **Minor** and **Patch** versions.
+
+By default the **What's New** page is displayed for **Major** and **Minor** updates, while **Patch** updates are silent. If you want the page to be displayed only for **Major** updates, use `setUpdateKind("major")` while building `WhatsNewManager`.
 
 ### Template Based
 

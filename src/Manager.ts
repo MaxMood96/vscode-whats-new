@@ -9,6 +9,8 @@ import { Uri, Webview } from "vscode";
 import { ContentProvider, SocialMediaProvider, SponsorProvider } from "./ContentProvider";
 import { WhatsNewPageBuilder } from "./PageBuilder";
 
+export type UpdateKind = "major" | "minor";
+
 export class WhatsNewManager {
 
     private publisher!: string;
@@ -21,6 +23,7 @@ export class WhatsNewManager {
     private extension!: vscode.Extension<any>;
     private versionKey!: string;
     private shownKey!: string;
+    private updateKind: UpdateKind = "minor";
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
@@ -53,6 +56,11 @@ export class WhatsNewManager {
 
     public registerSponsorProvider(sponsorProvider: SponsorProvider): WhatsNewManager {
         this.sponsorProvider = sponsorProvider;
+        return this;
+    }
+
+    public setUpdateKind(kind: UpdateKind): WhatsNewManager {
+        this.updateKind = kind;
         return this;
     }
 
@@ -90,7 +98,7 @@ export class WhatsNewManager {
             const differs: semver.ReleaseType | null = semver.diff(currentVersion, previousVersion);
 
             // only "patch" should be suppressed
-            if (!differs || differs === "patch") {
+            if (!differs || differs === "patch" || (this.updateKind === "major" && differs === "minor")) {
                 return;
             }
         }
@@ -112,7 +120,7 @@ export class WhatsNewManager {
             const isGreaterThanPreviousVersion = semver.gt(currentVersion, previousVersion);
 
             // only "patch" should be suppressed
-            if (!differs || differs === "patch" || !isGreaterThanPreviousVersion) {
+            if (!differs || differs === "patch" || !isGreaterThanPreviousVersion || (this.updateKind === "major" && differs === "minor")) {
                 return;
             }
         }
